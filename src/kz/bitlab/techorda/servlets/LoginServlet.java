@@ -1,28 +1,32 @@
 package kz.bitlab.techorda.servlets;
 
-
-import kz.bitlab.techorda.db.DBuilt;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import jakarta.servlet.annotation.*;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import kz.bitlab.techorda.db.DBConnection;
+import kz.bitlab.techorda.db.User;
 
 import java.io.IOException;
 
-@WebServlet(name = "LoginServlet", value = "/login")
+@WebServlet(value = "/login")
 public class LoginServlet extends HttpServlet {
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        request.getRequestDispatcher("/login.jsp").forward(request, response);
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        req.getRequestDispatcher("login.jsp").forward(req,resp);
     }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String email = request.getParameter("email_entered");
-        String password = request.getParameter("pwd_entered");
-        if (DBuilt.checkUser(email, password)) {
-            String fullName = DBuilt.getFullName(email);
-            request.setAttribute("fullName", fullName);
-            request.getRequestDispatcher("/userpage.jsp").forward(request, response);
-        } else response.sendRedirect("/login.jsp?wronguser");
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String email = req.getParameter("email");
+        String password = req.getParameter("password");
+        User user = DBConnection.getUser(email);
+        if(user!=null && user.getPassword().equals(password)){
+            HttpSession session = req.getSession();
+            session.setAttribute("currentUser", user);
+            resp.sendRedirect("/profile");
+        }else{
+            resp.sendRedirect("/login?error");
+        }
     }
 }

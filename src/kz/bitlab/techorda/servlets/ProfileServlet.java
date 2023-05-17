@@ -5,19 +5,18 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import kz.bitlab.techorda.db.Blog;
-import kz.bitlab.techorda.db.DBConnection;
+import kz.bitlab.techorda.db.User;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
-@WebServlet("/")
-public class HomeServlet extends HttpServlet {
-    @Override
+@WebServlet(value = "/profile")
+public class ProfileServlet extends HttpServlet {
     public void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        response.setContentType("text/html");
-        ArrayList<Blog> blogs = DBConnection.getAllBlogs();
-        request.setAttribute("blogs", blogs);
-        request.getRequestDispatcher("/blog.jsp").forward(request, response);
+        User currentUser = (User) request.getSession().getAttribute("currentUser");
+        if(currentUser!=null) {
+            request.getRequestDispatcher("/profile.jsp").forward(request, response);
+        }else{
+            response.sendRedirect("/login");
+        }
     }
 }
